@@ -14,7 +14,7 @@ In words, describe how you would do this (no need to write a query, unless youâ€
 We can achieve same result by using coorelated sub query in place of row_number analytic function.
 As we can see below query when we are trying to capture maximum createDateTime we can use correlated sub query 
 by passing the values from outer table tblRedemptions-ByDay into the same inner table and get the required createDateTime which will make query to return latest redemptionCount
-on the basis of the maximum redemptionDate.
+on the basis of the maximum createDateTime.
 
 SELECT
   ALL_DATES.ALL_DATE AS redemptionDate,
