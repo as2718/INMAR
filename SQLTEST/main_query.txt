@@ -1,6 +1,6 @@
 SELECT 
 ALL_DATES.ALL_DATE redemptionDate,
-MAIN_DATA.redemptionCount redemptionCount
+IFNULL(MAIN_DATA.redemptionCount,0) redemptionCount
 from
 (select redemptionDate,redemptionCount
 from
@@ -20,4 +20,3 @@ FROM UNNEST(GENERATE_DATE_ARRAY('2023-10-30', '2023-11-05')) AS ALL_DATE
 ON 
 (MAIN_DATA.redemptionDate=ALL_DATES.ALL_DATE)
 ;
-
