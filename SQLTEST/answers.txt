@@ -1,0 +1,47 @@
+1. Which date had the least number of redemptions and what was the redemption count?
+Answer . 2023-11-05 has the least number of redemptions and the redemption count was 3702
+
+2. Which date had the most number of redemptions and what was the redemption count?
+Answer .  2023-11-04 had the most number of redemptions and the redemption count was 5224
+
+3. What was the createDateTime for each redemptionCount in questions 1 and 2?
+Answer . In question 1 createDateTime was 2023-11-06 11:00:00 UTC  and in question 2 createDateTime was 2023-11-05 11:00:00 UTC.
+
+4. Is there another method you can use to pull back the most recent redemption count, by
+ redemption date, for the date range 2023-10-30 to 2023-11-05, for retailer "ABC Store"?
+In words, describe how you would do this (no need to write a query, unless you’d like to).
+
+We can achieve same result by using coorelated sub query in place of row_number analytic function.
+As we can see below query when we are trying to capture maximum createDateTime we can use correlated sub query 
+by passing the values from outer table tblRedemptions-ByDay into the same inner table and get the required createDateTime which will make query to return latest redemptionCount
+on the basis of the maximum redemptionDate.
+
+SELECT
+  ALL_DATES.ALL_DATE AS redemptionDate,
+  COALESCE(MAIN_DATA.redemptionCount, 0) AS redemptionCount
+FROM 
+  (SELECT ALL_DATE FROM UNNEST(GENERATE_DATE_ARRAY('2023-10-30', '2023-11-05')) AS ALL_DATE) AS ALL_DATES
+LEFT OUTER JOIN 
+  (
+    SELECT 
+      redemption_data.redemptionDate,
+      redemption_data.redemptionCount
+    FROM 
+      `optimal-tea-329509.reporting.tblRedemptions-ByDay` AS redemption_data
+    JOIN 
+      `optimal-tea-329509.reporting.tblRetailers` AS retailer
+    ON 
+      retailer.id = redemption_data.retailerId
+    WHERE 
+      retailer.retailerName = 'ABC Store'
+      AND redemption_data.redemptionDate BETWEEN '2023-10-30' AND '2023-11-05'
+      AND redemption_data.createDateTime = (
+        SELECT MAX(createDateTime)
+        FROM `optimal-tea-329509.reporting.tblRedemptions-ByDay`
+        WHERE redemptionDate = redemption_data.redemptionDate
+        AND retailerId=redemption_data.retailerId
+      )
+  ) AS MAIN_DATA
+ON    
+  ALL_DATES.ALL_DATE = MAIN_DATA.redemptionDate;
+ 
