@@ -1,0 +1,23 @@
+SELECT 
+ALL_DATES.ALL_DATE redemptionDate,
+MAIN_DATA.redemptionCount redemptionCount
+from
+(select redemptionDate,redemptionCount
+from
+(
+SELECT 
+redemption_data.redemptionDate redemptionDate,
+redemption_data.redemptionCount redemptionCount ,
+row_number() over (partition by redemption_data.redemptionDate order by redemption_data.createDateTime desc) RN
+FROM 
+`optimal-tea-329509.reporting.tblRedemptions-ByDay` redemption_data, 
+`optimal-tea-329509.reporting.tblRetailers` retailer 
+where retailer.id=redemption_data.retailerId and retailer.retailerName='ABC Store' and redemption_data.redemptionDate>='2023-10-30' and redemption_data.redemptionDate<='2023-11-05'
+) where RN =1)MAIN_DATA RIGHT OUTER JOIN
+(SELECT ALL_DATE
+FROM UNNEST(GENERATE_DATE_ARRAY('2023-10-30', '2023-11-05')) AS ALL_DATE
+) ALL_DATES
+ON 
+(MAIN_DATA.redemptionDate=ALL_DATES.ALL_DATE)
+;
+
